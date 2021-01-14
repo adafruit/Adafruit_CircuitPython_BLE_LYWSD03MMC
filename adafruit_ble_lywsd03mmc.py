@@ -16,21 +16,69 @@ Implementation Notes
 
 **Hardware:**
 
-.. todo:: Add links to any specific hardware product page(s), or category page(s). Use unordered list & hyperlink rST
-   inline format: "* `Link Text <url>`_"
-
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
   https://github.com/adafruit/circuitpython/releases
-
-.. todo:: Uncomment or remove the Bus Device and/or the Register library dependencies based on the library's use of either.
-
-# * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
-# * Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 """
 
-# imports
+import struct
+
+import _bleio
+from adafruit_ble.attributes import Attribute
+from adafruit_ble.services import Service
+from adafruit_ble.uuid import VendorUUID
+from adafruit_ble.characteristics import Characteristic, ComplexCharacteristic
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_LYWSD03MMC.git"
+
+
+class _Readings(ComplexCharacteristic):
+    """Notify-only characteristic of temperature/humidity"""
+
+    uuid = VendorUUID("ebe0ccc1-7a0a-4b0c-8a1a-6ff2997da3a6")
+
+    def __init__(self):
+        super().__init__(properties=Characteristic.NOTIFY)
+
+    def bind(self, service):
+        """Bind to an LYWSD03MMCService."""
+        bound_characteristic = super().bind(service)
+        bound_characteristic.set_cccd(notify=True)
+        # Use a PacketBuffer that can store one packet to receive the data.
+        return _bleio.PacketBuffer(bound_characteristic, buffer_size=1)
+
+
+class LYWSD03MMCService(Service):
+    """Service for reading from an LYWSD03MMC sensor."""
+
+    def __init__(self, service=None):
+        super().__init__(service=service)
+        # Defer creating buffers until needed, since MTU is not known yet.
+        self._settings_result_buf = None
+        self._readings_buf = None
+
+    uuid = VendorUUID("ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6")
+
+    readings = _Readings()
+
+    @property
+    def temperature_humidity(self):
+        """Return a tuple of (temperature, humidity)."""
+        if self._readings_buf is None:
+            self._readings_buf = bytearray(
+                self.readings.packet_size  # pylint: disable=no-member
+            )
+        data = self._readings_buf
+        length = self.readings.readinto(data)  # pylint: disable=no-member
+        if length > 0:
+            low_temp, high_temp, hum = struct.unpack_from("<BBB", data)
+            sign = high_temp & 0x80
+            temp = ((high_temp & 0x7F) << 8) | low_temp
+            if sign:
+                temp = temp - 32767
+            temp = temp / 100
+            return (temp, hum)
+        # No data.
+        return None
