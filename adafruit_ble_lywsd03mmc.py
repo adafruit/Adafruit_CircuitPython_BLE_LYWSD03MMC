@@ -66,11 +66,9 @@ class LYWSD03MMCService(Service):
     def temperature_humidity(self):
         """Return a tuple of (temperature, humidity)."""
         if self._readings_buf is None:
-            self._readings_buf = bytearray(
-                self.readings.packet_size  # pylint: disable=no-member
-            )
+            self._readings_buf = bytearray(self.readings.incoming_packet_length)
         data = self._readings_buf
-        length = self.readings.readinto(data)  # pylint: disable=no-member
+        length = self.readings.readinto(data)
         if length > 0:
             low_temp, high_temp, hum = struct.unpack_from("<BBB", data)
             sign = high_temp & 0x80
