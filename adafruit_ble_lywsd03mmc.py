@@ -67,7 +67,7 @@ class LYWSD03MMCService(Service):
         """Return a tuple of (temperature, humidity)."""
         if self._readings_buf is None:
             self._readings_buf = bytearray(
-                self.readings.incoming_packet_length  # pylint: disable=no-member
+                self.readings.incoming_packet_length
             )
         data = self._readings_buf
         length = self.readings.readinto(data)  # pylint: disable=no-member
