@@ -25,7 +25,6 @@ Implementation Notes
 import struct
 
 import _bleio
-from adafruit_ble.attributes import Attribute
 from adafruit_ble.services import Service
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic, ComplexCharacteristic
