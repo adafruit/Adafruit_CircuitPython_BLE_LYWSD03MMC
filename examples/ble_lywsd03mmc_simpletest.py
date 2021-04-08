@@ -5,10 +5,7 @@
 import time
 
 import adafruit_ble
-from adafruit_ble.advertising.standard import (
-    Advertisement,
-    ProvideServicesAdvertisement,
-)
+from adafruit_ble.advertising.standard import Advertisement
 from adafruit_ble_lywsd03mmc import LYWSD03MMCService
 
 # PyLint can't find BLERadio for some reason so special case it here.
