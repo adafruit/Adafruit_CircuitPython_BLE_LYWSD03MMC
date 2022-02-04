@@ -29,6 +29,11 @@ from adafruit_ble.services import Service
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic, ComplexCharacteristic
 
+try:
+    from typing import Optional, Tuple
+except ImportError:
+    pass
+
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_LYWSD03MMC.git"
 
@@ -38,10 +43,10 @@ class _Readings(ComplexCharacteristic):
 
     uuid = VendorUUID("ebe0ccc1-7a0a-4b0c-8a1a-6ff2997da3a6")
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(properties=Characteristic.NOTIFY)
 
-    def bind(self, service):
+    def bind(self, service: "LYWSD03MMCService") -> _bleio.PacketBuffer:
         """Bind to an LYWSD03MMCService."""
         bound_characteristic = super().bind(service)
         bound_characteristic.set_cccd(notify=True)
@@ -52,7 +57,7 @@ class _Readings(ComplexCharacteristic):
 class LYWSD03MMCService(Service):
     """Service for reading from an LYWSD03MMC sensor."""
 
-    def __init__(self, service=None):
+    def __init__(self, service: Optional["LYWSD03MMCService"] = None) -> None:
         super().__init__(service=service)
         # Defer creating buffers until needed, since MTU is not known yet.
         self._settings_result_buf = None
@@ -63,7 +68,7 @@ class LYWSD03MMCService(Service):
     readings = _Readings()
 
     @property
-    def temperature_humidity(self):
+    def temperature_humidity(self) -> Optional[Tuple[float, int]]:
         """Return a tuple of (temperature, humidity)."""
         if self._readings_buf is None:
             self._readings_buf = bytearray(self.readings.incoming_packet_length)
