@@ -75,11 +75,7 @@ class LYWSD03MMCService(Service):
         data = self._readings_buf
         length = self.readings.readinto(data)
         if length > 0:
-            low_temp, high_temp, hum = struct.unpack_from("<BBB", data)
-            sign = high_temp & 0x80
-            temp = ((high_temp & 0x7F) << 8) | low_temp
-            if sign:
-                temp = temp - 32767
+            temp, hum = struct.unpack_from("<hB", data)
             temp = temp / 100
             return (temp, hum)
         # No data.
