@@ -27,7 +27,6 @@ while True:
     if connection and connection.connected:
         service = connection[LYWSD03MMCService]
         while connection.connected:
-
             print(
                 "Temperature, Humidity",
                 service.temperature_humidity,
