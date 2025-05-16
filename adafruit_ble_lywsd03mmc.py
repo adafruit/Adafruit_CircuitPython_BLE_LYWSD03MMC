@@ -25,9 +25,9 @@ Implementation Notes
 import struct
 
 import _bleio
+from adafruit_ble.characteristics import Characteristic, ComplexCharacteristic
 from adafruit_ble.services import Service
 from adafruit_ble.uuid import VendorUUID
-from adafruit_ble.characteristics import Characteristic, ComplexCharacteristic
 
 try:
     from typing import Optional, Tuple
