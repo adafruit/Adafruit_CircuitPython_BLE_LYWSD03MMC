@@ -76,7 +76,7 @@ class LYWSD03MMCService(Service):
         length = self.readings.readinto(data)
         if length > 0:
             temp, hum = struct.unpack_from("<hB", data)
-            temp = temp / 100
+            temp /= 100
             return (temp, hum)
         # No data.
         return None
